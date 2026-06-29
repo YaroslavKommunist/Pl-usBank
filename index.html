@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pl'usBank</title>
+    
+    <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIlBsJ3VzQmFuayIsCiAgInNob3J0X25hbWUiOiAiUGx1c0JhbmsiLAogICJzdGFydF91cmwiOiAiLiIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiI2YyZjJmMiIsCiAgInRoZW1lX2NvbG9yIjogIiMzNjg1NUIiLAogICJpY29ucyI6IFt7CiAgICAic3JjIjogImRhdGE6aW1hZ2Uvc3ZnK3htbCwlM0NzdmcgeG1sbnM9J2h0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnJyB2aWV3Qm94PScwIDAgMTAwIDEwMCclM0UlM0NjaXJjbGUgY3g9JzUwJyBjeT0nNTAnIHI9JzUwJyBmaWxsPSclMjMzNjg1NUInLyUzRSUzQ3RleHQgeD0nNTAnIHk9JzY1JyBmb250LXNpemU9JzI4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyBmaWxsPSd3aGl0ZScgZm9udC1mYW1pbHk9J0FyaWFsJyBmb250LXdlaWdodD0nYm9sZCclM0VQQiUzQy90ZXh0JTNFJTNDL3N2ZyUzRSIsCiAgICAic2l6ZXMiOiAiMTkyeDE5MiIsCiAgICAidHlwZSI6ICJpbWFnZS9zdmcreG1sIgogIH1dfQ==">
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Pl'usBank">
+    <meta name="theme-color" content="#36855B">
+    
+    <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+        --bg: #f2f2f2; --card: #fff; --card2: #f8f8f8; --text: #1a1a1a;
+        --muted: #888; --border: #ddd; --btn-gray: #e9ecef; --btn-light: #e0e0e0;
+        --green: #36855B; --red: #dc3545;
+        --cat-bg: #f0f0f0; --blue-light: #e6f2ec;
+    }
+    body.dark {
+        --bg: #1a1a1a; --card: #2a2a2a; --card2: #333; --text: #eee;
+        --muted: #999; --border: #444; --btn-gray: #444; --btn-light: #444;
+        --cat-bg: #333; --blue-light: #1a3a2a;
+    }
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: var(--bg); color: var(--text); 
+        padding: 12px 12px 20px 12px;
+        max-width: 480px; margin: 0 auto;
+        -webkit-tap-highlight-color: transparent; user-select: none;
+        padding-top: max(12px, env(safe-area-inset-top));
+        padding-bottom: max(20px, env(safe-area-inset-bottom));
+    }
+    .block {
+        background: var(--card); border-radius: 16px; padding: 16px;
+        margin-bottom: 12px; border: 1px solid var(--border);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .flex { display: flex; gap: 8px; flex-wrap: wrap; }
+    .flex-1 { flex: 1; min-width: 80px; }
+    .btn {
+        border: none; padding: 12px 16px; border-radius: 10px;
+        font-size: 15px; cursor: pointer; background: var(--btn-light);
+        color: var(--text); width: 100%; font-weight: 600;
+        transition: opacity 0.15s;
+    }
+    .btn:active { opacity: 0.7; }
+    .btn-green { background: var(--green); color: #fff; }
+    .btn-red { background: var(--red); color: #fff; }
+    .btn-gray { background: var(--btn-gray); color: var(--text); }
+    input, select {
+        border: 1px solid var(--border); border-radius: 10px;
+        padding: 12px 14px; font-size: 16px; width: 100%;
+        background: var(--card); color: var(--text); margin-bottom: 8px;
+    }
+    input:focus, select:focus { outline: none; border-color: var(--green); }
+    select {
+        -webkit-appearance: none; appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23888' d='M6 8L0 2h12z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat; background-position: right 14px center;
+        padding-right: 36px;
+    }
+    .cat-grid {
+        display: grid; grid-template-columns: repeat(4, 1fr);
+        gap: 6px; margin: 8px 0;
+    }
+    .cat-item {
+        background: var(--cat-bg); padding: 12px 4px; border-radius: 10px;
+        text-align: center; cursor: pointer; border: 2px solid transparent;
+        font-size: 13px; transition: all 0.15s; font-weight: 500;
+    }
+    .cat-item:active { transform: scale(0.95); }
+    .cat-item.active { border-color: var(--green); background: var(--blue-light); }
+    .row {
+        display: flex; justify-content: space-between;
+        align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border);
+    }
+    .row .price { color: var(--red); font-weight: 600; }
+    .row .price.green { color: var(--green); }
+    .total {
+        text-align: right; font-size: 20px; font-weight: bold;
+        padding-top: 12px; border-top: 2px solid var(--border); margin-top: 8px;
+    }
+    .nav-bar { 
+        display: flex; 
+        gap: 8px; 
+        margin-bottom: 16px;
+        margin-top: 8px;
+        flex-wrap: wrap; 
+        padding: 4px 0;
+    }
+    .nav-main {
+        flex: 1; background: var(--card); border-radius: 12px;
+        padding: 4px; border: 1px solid var(--border); display: flex; gap: 2px;
+        flex-wrap: wrap;
+        min-width: 200px;
+    }
+    .nav-main .tab {
+        flex: 1; padding: 10px 4px; text-align: center; border-radius: 10px;
+        cursor: pointer; font-size: 12px; font-weight: 600;
+        color: var(--muted); transition: all 0.15s; white-space: nowrap;
+        min-width: 50px;
+    }
+    .nav-main .tab:active { transform: scale(0.95); }
+    .nav-main .tab.active { background: var(--green); color: #fff; }
+    .nav-more-btn {
+        width: 44px; height: 44px; border-radius: 12px;
+        background: var(--card); border: 1px solid var(--border);
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer; font-size: 18px; color: var(--text); flex-shrink: 0;
+        transition: all 0.15s;
+    }
+    .nav-more-btn:active { transform: scale(0.9); }
+    .nav-more-btn.open { background: var(--green); color: #fff; border-color: var(--green); }
+    .nav-wrapper { position: relative; flex-shrink: 0; }
+    .nav-dropdown {
+        position: absolute; top: 100%; right: 0; margin-top: 4px;
+        background: var(--card); border: 1px solid var(--border);
+        border-radius: 12px; padding: 4px; z-index: 50;
+        min-width: 150px; box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+        display: none; flex-direction: column; gap: 2px;
+    }
+    .nav-dropdown.show { display: flex; }
+    .nav-dropdown .tab {
+        padding: 10px 14px; text-align: left; border-radius: 10px;
+        cursor: pointer; font-size: 13px; font-weight: 500; color: var(--muted);
+    }
+    .nav-dropdown .tab:active { background: var(--btn-gray); }
+    .nav-dropdown .tab.active { background: var(--green); color: #fff; }
+    .hidden { display: none !important; }
+    .text-muted { color: var(--muted); font-size: 13px; }
+    .text-center { text-align: center; }
+    .mt-8 { margin-top: 8px; }
+    .mb-8 { margin-bottom: 8px; }
+    .badge {
+        background: var(--btn-gray); padding: 4px 14px; border-radius: 20px;
+        font-size: 13px; font-weight: 500;
+    }
+    .btn-small {
+        border: none; padding: 6px 12px; border-radius: 8px;
+        font-size: 13px; cursor: pointer; background: var(--btn-light);
+        color: var(--text); font-weight: 500;
+    }
+    .btn-small:active { opacity: 0.7; }
+    .install-banner {
+        background: var(--green); color: white; padding: 12px 16px;
+        border-radius: 12px; margin-bottom: 12px; display: none;
+        align-items: center; gap: 12px; cursor: pointer; font-weight: 500;
+    }
+    .install-banner.show { display: flex; }
+    .tag {
+        display: inline-block; background: var(--blue-light); color: var(--green);
+        padding: 2px 8px; border-radius: 12px; font-size: 11px;
+        margin: 2px; font-family: monospace;
+    }
+    .match-box {
+        background: var(--card2); padding: 12px; border-radius: 10px;
+        margin: 10px 0; border: 1px solid var(--border);
+    }
+    .quick-btn {
+        padding: 14px 8px; border-radius: 10px; text-align: center;
+        cursor: pointer; font-weight: 500; font-size: 14px;
+        transition: opacity 0.15s; background: var(--cat-bg);
+        border: 2px solid transparent; position: relative;
+    }
+    .quick-btn:active { opacity: 0.8; border-color: var(--green); }
+    .quick-btn .delete-quick {
+        position: absolute; top: 2px; right: 4px; width: 20px; height: 20px;
+        border-radius: 50%; background: var(--red); color: #fff;
+        border: none; font-size: 12px; cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+    }
+    .quick-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .setting-row {
+        display: flex; justify-content: space-between;
+        align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border);
+    }
+    .setting-row:last-child { border-bottom: none; }
+    .setting-row .label { font-weight: 500; }
+    .setting-row select { width: auto; min-width: 120px; margin-bottom: 0; }
+    .gear-btn {
+        position: fixed; bottom: 20px; right: 20px;
+        width: 48px; height: 48px; border-radius: 50%;
+        background: var(--card); border: 2px solid var(--border);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer; z-index: 100; font-size: 22px;
+        transition: all 0.15s; color: var(--text);
+    }
+    .gear-btn:active { transform: scale(0.9); }
+    .modal-overlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.5); z-index: 200;
+        display: none; align-items: flex-end; justify-content: center;
+    }
+    .modal-overlay.show { display: flex; }
+    .modal-content {
+        background: var(--card); width: 100%; max-width: 480px;
+        max-height: 85vh; border-radius: 20px 20px 0 0;
+        padding: 20px 16px 30px; overflow-y: auto;
+    }
+    .modal-header {
+        display: flex; justify-content: space-between;
+        align-items: center; margin-bottom: 16px;
+    }
+    .modal-header .title { font-size: 20px; font-weight: bold; }
+    .modal-close {
+        width: 36px; height: 36px; border-radius: 50%;
+        border: none; background: var(--btn-gray); font-size: 20px;
+        cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text);
+    }
+    .edit-overlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.5); z-index: 300;
+        display: none; align-items: center; justify-content: center;
+    }
+    .edit-overlay.show { display: flex; }
+    .edit-dialog {
+        background: var(--card); padding: 20px; border-radius: 16px;
+        width: 90%; max-width: 360px;
+    }
+    .edit-dialog input, .edit-dialog select { margin-bottom: 10px; }
+    .progress-bar {
+        height: 8px; border-radius: 4px; background: var(--btn-gray);
+        overflow: hidden; margin: 6px 0;
+    }
+    .progress-fill { height: 100%; border-radius: 4px; transition: width 0.3s; }
+    .progress-fill.safe { background: var(--green); }
+    .progress-fill.warn { background: #f39c12; }
+    .progress-fill.danger { background: var(--red); }
+    .progress-fill.green { background: var(--green); }
+    .goal-card {
+        background: var(--card2); padding: 14px; border-radius: 10px;
+        margin-bottom: 8px;
+    }
+    .toast {
+        position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+        background: var(--card); color: var(--text); padding: 12px 24px;
+        border-radius: 20px; font-size: 14px; font-weight: 500;
+        z-index: 500; box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+        transition: opacity 0.3s; pointer-events: none; opacity: 0;
+        border: 1px solid var(--border);
+    }
+    .bank-card {
+        background: linear-gradient(135deg, var(--green), #1a5a3a);
+        color: white; padding: 20px; border-radius: 16px;
+        margin-bottom: 12px; position: relative; overflow: hidden;
+    }
+    .bank-card .card-number { font-size: 18px; letter-spacing: 2px; font-family: monospace; margin: 8px 0; }
+    .bank-card .card-label { font-size: 12px; opacity: 0.8; }
+    .bank-card .balance-large { font-size: 32px; font-weight: bold; }
+    .bank-card .card-footer { display: flex; justify-content: space-between; margin-top: 12px; }
+    .bank-card .card-footer span { font-size: 13px; opacity: 0.9; }
+    .mini-stat { 
+        display: grid; 
+        grid-template-columns: repeat(3, 1fr); 
+        gap: 8px; 
+        margin-top: 12px;
+        margin-bottom: 4px;
+    }
+    .mini-stat .stat-item {
+        background: var(--card2); padding: 12px; border-radius: 12px;
+        text-align: center; border: 1px solid var(--border);
+    }
+    .mini-stat .stat-item .num { font-size: 18px; font-weight: bold; }
+    .mini-stat .stat-item .label { font-size: 11px; color: var(--muted); }
+    .loan-item, .deposit-item {
+        background: var(--card2); padding: 14px; border-radius: 12px;
+        margin-bottom: 8px; border: 1px solid var(--border);
+    }
+    .loan-item .header, .deposit-item .header {
+        display: flex; justify-content: space-between; align-items: center;
+    }
+    .loan-item .rate { color: var(--red); font-weight: 600; }
+    .deposit-item .rate { color: var(--green); font-weight: 600; }
+    .deposit-item .btn-green { background: var(--green); }
+</style>
+</head>
+<body>
+
+    <div class="install-banner" id="installBanner" onclick="installApp()">
+        <span style="flex:1;">Установить Pl'usBank</span>
+        <span style="font-size:20px;">→</span>
+    </div>
+
+    <div class="gear-btn" onclick="openProfile()">⚙</div>
+
+    <!-- Профиль -->
+    <div class="modal-overlay" id="profileModal" onclick="if(event.target===this)closeProfile()">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="title">Pl'usBank</span>
+                <button class="modal-close" onclick="closeProfile()">✕</button>
+            </div>
+            <div class="block">
+                <div class="setting-row">
+                    <span class="label">Имя владельца</span>
+                    <input type="text" id="cardHolderName" placeholder="Ваше имя" onchange="saveCardHolder()" style="width:auto;min-width:150px;margin:0;padding:6px 12px;">
+                </div>
+                <div class="setting-row">
+                    <span class="label">Язык</span>
+                    <select id="langSelect" onchange="changeLanguage(this.value)">
+                        <option value="ru">Русский</option>
+                        <option value="en">English</option>
+                    </select>
+                </div>
+                <div class="setting-row">
+                    <span class="label">Валюта</span>
+                    <select id="profileCurrency" onchange="changeCurrency(this.value)">
+                        <option value="₽">₽</option><option value="$">$</option><option value="€">€</option>
+                        <option value="₸">₸</option><option value="₴">₴</option><option value="£">£</option><option value="¥">¥</option>
+                    </select>
+                </div>
+                <div class="setting-row">
+                    <span class="label">Тема</span>
+                    <select id="themeSelect" onchange="changeTheme(this.value)">
+                        <option value="light">Светлая</option>
+                        <option value="dark">Тёмная</option>
+                        <option value="auto">Как в системе</option>
+                    </select>
+                </div>
+            </div>
+            <div class="block">
+                <div style="font-weight:bold;margin-bottom:10px;font-size:16px;">Синхронизация</div>
+                <div class="text-muted mb-8">Перенос данных через QR-код.</div>
+                <div class="flex">
+                    <button class="btn btn-green flex-1" onclick="exportQR()">Создать QR</button>
+                    <button class="btn btn-gray flex-1" onclick="importQR()">Сканировать QR</button>
+                </div>
+                <div id="syncStatus" class="text-muted text-center mt-8">Готов к синхронизации</div>
+                <div id="qrDisplay" style="text-align:center;margin-top:10px;"></div>
+            </div>
+            <div class="block">
+                <div style="font-weight:bold;margin-bottom:10px;font-size:16px;">Данные</div>
+                <button class="btn btn-red" onclick="clearAll()">Очистить все данные</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Диалоги -->
+    <div class="edit-overlay" id="quickEditDialog" onclick="if(event.target===this)cancelQuickEdit()">
+        <div class="edit-dialog">
+            <div style="font-weight:bold;margin-bottom:12px;font-size:16px;">Быстрая кнопка</div>
+            <input type="text" id="quickEditName" placeholder="Название">
+            <input type="number" id="quickEditPrice" placeholder="Сумма" step="0.01" inputmode="decimal">
+            <select id="quickEditCat"><option value="food">Еда</option><option value="transport">Транспорт</option><option value="entertainment">Развлечения</option><option value="home">Дом</option><option value="health">Здоровье</option><option value="gifts">Подарки</option><option value="clothing">Одежда</option><option value="other">Другое</option></select>
+            <div class="flex"><button class="btn btn-green flex-1" onclick="saveQuickEdit()">Сохранить</button><button class="btn btn-gray flex-1" onclick="cancelQuickEdit()">Отмена</button></div>
+        </div>
+    </div>
+
+    <div class="edit-overlay" id="goalEditDialog" onclick="if(event.target===this)cancelGoalEdit()">
+        <div class="edit-dialog">
+            <div style="font-weight:bold;margin-bottom:12px;font-size:16px;">Новая цель</div>
+            <input type="text" id="goalEditName" placeholder="Название цели">
+            <input type="number" id="goalEditAmount" placeholder="Сумма" step="0.01" inputmode="decimal">
+            <div class="flex"><button class="btn btn-green flex-1" onclick="saveGoalEdit()">Сохранить</button><button class="btn btn-gray flex-1" onclick="cancelGoalEdit()">Отмена</button></div>
+        </div>
+    </div>
+
+    <div class="edit-overlay" id="confirmDialog" onclick="if(event.target===this)closeConfirm()">
+        <div class="edit-dialog">
+            <div style="font-weight:bold;margin-bottom:8px;font-size:16px;" id="confirmTitle">Подтверждение</div>
+            <div style="margin-bottom:16px;color:var(--muted);" id="confirmMessage">Вы уверены?</div>
+            <div class="flex"><button class="btn btn-red flex-1" id="confirmYesBtn">Да</button><button class="btn btn-gray flex-1" onclick="closeConfirm()">Отмена</button></div>
+        </div>
+    </div>
+
+    <div class="edit-overlay" id="inputDialog" onclick="if(event.target===this)closeInputDialog()">
+        <div class="edit-dialog">
+            <div style="font-weight:bold;margin-bottom:8px;font-size:16px;" id="inputTitle">Введите данные</div>
+            <input type="text" id="inputField1" placeholder="Название">
+            <input type="number" id="inputField2" placeholder="Сумма" step="0.01" inputmode="decimal" style="display:none;">
+            <div class="flex"><button class="btn btn-green flex-1" id="inputOkBtn">OK</button><button class="btn btn-gray flex-1" onclick="closeInputDialog()">Отмена</button></div>
+        </div>
+    </div>
+
+    <!-- БАНКОВСКАЯ КАРТА -->
+    <div class="bank-card" id="mainCard">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+            <div>
+                <div class="card-label">Pl'usBank</div>
+                <div class="balance-large" id="totalDisplay">0</div>
+                <div class="card-label">Доступно</div>
+            </div>
+            <div style="font-size:28px;opacity:0.8;">💳</div>
+        </div>
+        <div class="card-number" id="cardNumberDisplay">•••• •••• •••• 4824</div>
+        <div class="card-footer">
+            <span id="cardHolderDisplay">ВЛАДЕЛЕЦ</span>
+            <span id="cardExpiry">12/28</span>
+        </div>
+    </div>
+
+    <!-- Мини-статистика -->
+    <div class="mini-stat">
+        <div class="stat-item"><div class="num" id="todayDisplay">0</div><div class="label">Сегодня</div></div>
+        <div class="stat-item"><div class="num" id="weekTotal">0</div><div class="label">Неделя</div></div>
+        <div class="stat-item"><div class="num" id="weekIncome">0</div><div class="label">Доходы</div></div>
+    </div>
+
+    <!-- НАВИГАЦИЯ -->
+    <div class="nav-bar">
+        <div class="nav-main" id="navMain">
+            <div class="tab active" onclick="switchTab('main')" data-tab="main">Главная</div>
+            <div class="tab" onclick="switchTab('income')" data-tab="income">Доходы</div>
+            <div class="tab" onclick="switchTab('loans')" data-tab="loans">Кредиты</div>
+            <div class="tab" onclick="switchTab('deposits')" data-tab="deposits">Вклады</div>
+            <div class="tab" onclick="switchTab('transfer')" data-tab="transfer">Перевод</div>
+        </div>
+        <div class="nav-wrapper">
+            <div class="nav-more-btn" id="navMoreBtn" onclick="toggleNavDropdown()">...</div>
+            <div class="nav-dropdown" id="navDropdown">
+                <div class="tab" onclick="switchTab('regular')" data-tab="regular">Регулярные</div>
+                <div class="tab" onclick="switchTab('limits')" data-tab="limits">Лимиты</div>
+                <div class="tab" onclick="switchTab('goals')" data-tab="goals">Цели</div>
+                <div class="tab" onclick="switchTab('scan')" data-tab="scan">Сканер</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ГЛАВНАЯ -->
+    <div id="tab-main">
+        <div class="block">
+            <div style="font-weight:bold;margin-bottom:10px;">Последние операции</div>
+            <div id="expenseList"><div class="text-muted text-center" style="padding:20px 0;">Нет операций</div></div>
+            <div class="total" id="mainTotal">Баланс: 0</div>
+        </div>
+
+        <div class="block">
+            <div style="font-weight:bold;margin-bottom:10px;font-size:16px;">Быстрая трата</div>
+            <input type="number" id="manualAmount" placeholder="Сумма" step="0.01" inputmode="decimal">
+            <div class="cat-grid" id="categoryGrid">
+                <div class="cat-item" onclick="selectCategory('food')" data-key="food">Еда</div>
+                <div class="cat-item" onclick="selectCategory('transport')" data-key="transport">Транспорт</div>
+                <div class="cat-item" onclick="selectCategory('entertainment')" data-key="entertainment">Развлечения</div>
+                <div class="cat-item" onclick="selectCategory('home')" data-key="home">Дом</div>
+                <div class="cat-item" onclick="selectCategory('health')" data-key="health">Здоровье</div>
+                <div class="cat-item" onclick="selectCategory('gifts')" data-key="gifts">Подарки</div>
+                <div class="cat-item" onclick="selectCategory('clothing')" data-key="clothing">Одежда</div>
+                <div class="cat-item" onclick="selectCategory('other')" data-key="other">Другое</div>
+            </div>
+            <input type="text" id="manualComment" placeholder="Комментарий">
+            <button class="btn btn-green" onclick="addManualExpense()">Списать</button>
+        </div>
+    </div>
+
+    <!-- ДОХОДЫ -->
+    <div id="tab-income" class="hidden">
+        <div class="block">
+            <div style="font-weight:bold;margin-bottom:10px;font-size:16px;">Зачислить доход</div>
+            <input type="number" id="incomeAmount" placeholder="Сумма" step="0.01" inputmode="decimal">
+            <input type="text" id="incomeSource" placeholder="Источник (зарплата, подарок...)">
+            <button class="btn btn-green" onclick="addIncome()">Зачислить</button>
+        </div>
+        <div class="block">
+            <div style="font-weight:bold;margin-bottom:10px;font-size:16px;">История доходов</div>
+            <div id="incomeList"><div class="text-muted text-center" style="padding:20px 0;">Нет доходов</div></div>
+            <div class="total" style="color:var(--green);" id="incomeTotal">Всего доходов: 0</div>
+        </div>
+    </div>
+
+    <!-- КРЕДИТЫ -->
+    <div id="tab-loans" class="hidden">
+        <div class="block">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                <span style="font-weight:bold;font-size:16px;">Мои кредиты</span>
+                <button class="btn btn-green" onclick="addLoan()" style="width:auto;padding:8px 16px;">+ Взять</button>
+            </div>
+            <div id="loansList"><div class="text-muted text-center" style="padding:20px 0;">Нет активных кредитов</div></div>
+            <div class="total" style="color:var(--red);" id="loansTotal">Общий долг: 0</div>
+        </div>
+    </div>
+
+    <!-- ВКЛАДЫ -->
+    <div id="tab-deposits" class="hidden">
+        <div class="block">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                <span style="font-weight:bold;font-size:16px;">Мои вклады</span>
+                <button class="btn btn-green" onclick="addDeposit()" style="width:auto;padding:8px 16px;">+ Открыть</button>
+            </div>
+            <div id="depositsList"><div class="text-muted text-center" style="padding:20px 0;">Нет активных вкладов</div></div>
+            <div class="total" style="color:var(--green);" id="depositsTotal">Общая сумма: 0</div>
+        </div>
+    </div>
+
+    <!-- ПЕРЕВОД -->
+    <div id="tab-transfer" class="hidden">
+        <div class="block">
+            <div style="font-weight:bold;margin-bottom:10px;font-size:16px;">Перевод средств</div>
+            <input type="text" id="transferRecipient" placeholder="Получатель (номер карты или телефон)">
+            <input type="number" id="transferAmount" placeholder="Сумма перевода" step="0.01" inputmode="decimal">
+            <input type="text" id="transferComment" placeholder="Назначение платежа">
+            <div class="flex">
+                <button class="btn btn-green flex-1" onclick="doTransfer()">Перевести</button>
+                <button class="btn btn-gray flex-1" onclick="clearTransfer()">Очистить</button>
+            </div>
+        </div>
+        <div class="block">
+            <div style="font-weight:bold;margin-bottom:10px;font-size:16px;">История переводов</div>
+            <div id="transfersList"><div class="text-muted text-center" style="padding:20px 0;">Нет переводов</div></div>
+        </div>
+    </div>
+
+    <!-- РЕГУЛЯРНЫЕ -->
+    <div id="tab-regular" class="hidden">
+        <div class="block">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                <span style="font-weight:bold;font-size:16px;">Быстрые действия</span>
+                <button class="btn btn-green" onclick="addQuickBtn()" style="width:auto;padding:8px 16px;font-size:18px;">+</button>
+            </div>
+            <div class="quick-grid" id="quickButtonsGrid"></div>
+        </div>
+        <div class="block">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                <span style="font-weight:bold;font-size:16px;">Регулярные платежи</span>
+                <button class="btn btn-green" onclick="toggleRegularForm()" style="width:auto;padding:10px 16px;font-size:14px;">+ Добавить</button>
+            </div>
+            <div id="regularList"><div class="text-muted text-center" style="padding:20px 0;">Нет платежей</div></div>
+        </div>
+        <div class="block" id="regularAddForm" style="display:none;">
+            <div style="font-weight:bold;margin-bottom:10px;font-size:16px;">Новый платёж</div>
+            <input type="text" id="regularName" placeholder="Название">
+            <div class="flex">
+                <input type="number" id="regularAmount" placeholder="Сумма" step="0.01" inputmode="decimal" class="flex-1">
+                <input type="number" id="regularDay" placeholder="День" min="1" max="31" style="max-width:80px;">
+            </div>
+            <div class="flex mt-8">
+                <button class="btn btn-green flex-1" onclick="saveRegularPayment()">Сохранить</button>
+                <button class="btn btn-gray flex-1" onclick="cancelRegularPayment()">Отмена</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ЛИМИТЫ -->
+    <div id="tab-limits" class="hidden">
+        <div class="block">
+            <div style="font-weight:bold;margin-bottom:10px;font-size:16px;">Месячный бюджет</div>
+            <div class="flex">
+                <input type="number" id="monthlyBudget" placeholder="Сумма на месяц" step="0.01" inputmode="decimal" class="flex-1">
+                <button class="btn btn-green" onclick="saveMonthlyBudget()" style="width:auto;padding:12px 20px;">Сохранить</button>
+            </div>
+            <div id="monthlyBudgetStatus" class="mt-8"></div>
+        </div>
+        <div class="block">
+            <div style="font-weight:bold;margin-bottom:10px;font-size:16px;">Лимиты по категориям</div>
+            <div id="categoryLimits"></div>
+        </div>
+    </div>
+
+    <!-- ЦЕЛИ -->
+    <div id="tab-goals" class="hidden">
+        <div class="block">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                <span style="font-weight:bold;font-size:16px;">Цели накопления</span>
+                <button class="btn btn-green" onclick="addGoal()" style="width:auto;padding:8px 16px;font-size:18px;">+</button>
+            </div>
+            <div id="goalsList"><div class="text-muted text-center" style="padding:20px 0;">Нет целей</div></div>
+        </div>
+    </div>
+
+    <!-- СКАНЕР -->
+    <div id="tab-scan" class="hidden">
+        <div class="block">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                <span style="font-weight:bold;font-size:16px;" id="scannerTitle">Сканер штрихкодов</span>
+                <span class="badge" id="scanStatus">Остановлен</span>
+            </div>
+            <div style="background:#000;border-radius:12px;overflow:hidden;min-height:250px;"><div id="reader"></div></div>
+            <div class="flex" style="margin-top:10px;">
+                <button class="btn btn-green" onclick="startScanner()" style="flex:1;">Запустить</button>
+                <button class="btn btn-red" onclick="stopScanner()" style="flex:1;">Остановить</button>
+            </div>
+        </div>
+        <div class="block" id="scannedProduct" style="display:none;"><div id="scanResult"></div></div>
+        <div class="block">
+            <div style="display:flex;justify-content:space-between;font-weight:bold;margin-bottom:10px;">
+                <span>Корзина</span><span style="color:var(--green);" id="cartCount">0 товаров</span>
+            </div>
+            <div id="cartList"><div class="text-muted text-center" style="padding:15px 0;">Корзина пуста</div></div>
+            <div class="total" id="cartTotal">Итого: 0</div>
+            <button class="btn btn-green mt-8" onclick="saveCart()">Сохранить покупку</button>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <script>
+        // ===== DATA =====
+        let L = localStorage.getItem('language') || (navigator.language.startsWith('ru')?'ru':'en');
+        let C = localStorage.getItem('currency') || '₽';
+        let theme = localStorage.getItem('theme') || 'auto';
+        let cardHolder = localStorage.getItem('cardHolder') || 'ВЛАДЕЛЕЦ';
+        let expenses = JSON.parse(localStorage.getItem('expenses')||'[]');
+        let incomes = JSON.parse(localStorage.getItem('incomes')||'[]');
+        let cart = JSON.parse(localStorage.getItem('cart')||'[]');
+        let regularPayments = JSON.parse(localStorage.getItem('regularPayments')||'[]');
+        let productDB = JSON.parse(localStorage.getItem('productDB')||'{}');
+        let quickBtns = JSON.parse(localStorage.getItem('quickBtns')||'[{"name":"Проезд","price":50,"category":"transport"},{"name":"Кофе","price":200,"category":"food"}]');
+        let monthlyBudget = parseFloat(localStorage.getItem('monthlyBudget')||'0');
+        let categoryLimits = JSON.parse(localStorage.getItem('categoryLimits')||'{}');
+        let goals = JSON.parse(localStorage.getItem('goals')||'[]');
+        let loans = JSON.parse(localStorage.getItem('loans')||'[]');
+        let deposits = JSON.parse(localStorage.getItem('deposits')||'[]');
+        let transfers = JSON.parse(localStorage.getItem('transfers')||'[]');
+        
+        let selectedCategory = '', scanner = null, scannedBarcode = '', editingQuickIndex = -1, editingGoalIndex = -1;
+        let confirmCallback = null, inputCallback = null;
+        let isImporting = false;
+
+        function saveAll() {
+            localStorage.setItem('expenses', JSON.stringify(expenses));
+            localStorage.setItem('incomes', JSON.stringify(incomes));
+            localStorage.setItem('cart', JSON.stringify(cart));
+            localStorage.setItem('regularPayments', JSON.stringify(regularPayments));
+            localStorage.setItem('productDB', JSON.stringify(productDB));
+            localStorage.setItem('quickBtns', JSON.stringify(quickBtns));
+            localStorage.setItem('monthlyBudget', monthlyBudget);
+            localStorage.setItem('categoryLimits', JSON.stringify(categoryLimits));
+            localStorage.setItem('goals', JSON.stringify(goals));
+            localStorage.setItem('loans', JSON.stringify(loans));
+            localStorage.setItem('deposits', JSON.stringify(deposits));
+            localStorage.setItem('transfers', JSON.stringify(transfers));
+            localStorage.setItem('cardHolder', cardHolder);
+        }
+
+        function f(a) { return C + (a || 0).toFixed(2); }
+        function getBalance() { return incomes.reduce((s,i)=>s+i.amount,0) - expenses.reduce((s,e)=>s+e.amount,0); }
+
+        function showToast(msg) {
+            let toast = document.getElementById('toast');
+            if (!toast) { toast = document.createElement('div'); toast.id = 'toast'; toast.className = 'toast'; document.body.appendChild(toast); }
+            toast.textContent = msg; toast.style.opacity = '1';
+            clearTimeout(toast._t); toast._t = setTimeout(() => { toast.style.opacity = '0'; }, 2500);
+        }
+
+        function showConfirm(title, message, callback) {
+            document.getElementById('confirmTitle').textContent = title;
+            document.getElementById('confirmMessage').textContent = message;
+            confirmCallback = callback;
+            document.getElementById('confirmDialog').classList.add('show');
+        }
+        function closeConfirm() { document.getElementById('confirmDialog').classList.remove('show'); confirmCallback = null; }
+        document.getElementById('confirmYesBtn').addEventListener('click', function() { if (confirmCallback) confirmCallback(); closeConfirm(); });
+
+        function showInput(title, placeholder1, placeholder2, callback) {
+            document.getElementById('inputTitle').textContent = title;
+            const f1 = document.getElementById('inputField1');
+            const f2 = document.getElementById('inputField2');
+            f1.value = ''; f1.placeholder = placeholder1; f1.style.display = 'block';
+            if (placeholder2) { f2.value = ''; f2.placeholder = placeholder2; f2.style.display = 'block'; } 
+            else { f2.style.display = 'none'; }
+            inputCallback = callback;
+            document.getElementById('inputDialog').classList.add('show');
+            setTimeout(() => f1.focus(), 100);
+        }
+        function closeInputDialog() { document.getElementById('inputDialog').classList.remove('show'); inputCallback = null; }
+        document.getElementById('inputOkBtn').addEventListener('click', function() {
+            if (inputCallback) {
+                const v1 = document.getElementById('inputField1').value.trim();
+                const v2 = document.getElementById('inputField2').style.display !== 'none' ? document.getElementById('inputField2').value.trim() : null;
+                inputCallback(v1, v2);
+            }
+            closeInputDialog();
+        });
+
+        function applyTheme() {
+            if (theme === 'dark') document.body.classList.add('dark');
+            else if (theme === 'light') document.body.classList.remove('dark');
+            else { if (window.matchMedia('(prefers-color-scheme: dark)').matches) document.body.classList.add('dark'); else document.body.classList.remove('dark'); }
+            document.getElementById('themeSelect').value = theme;
+        }
+        function changeTheme(t) { theme = t; localStorage.setItem('theme', t); applyTheme(); }
+        applyTheme();
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
+
+        function changeCurrency(s) { C = s; localStorage.setItem('currency', s); updateUI(); }
+        function changeLanguage(l) { L = l; localStorage.setItem('language', l); updateUI(); }
+        
+        function saveCardHolder() {
+            const name = document.getElementById('cardHolderName').value.trim().toUpperCase();
+            if (name) { cardHolder = name; saveAll(); updateUI(); }
+        }
+
+        function toggleNavDropdown() {
+            document.getElementById('navDropdown').classList.toggle('show');
+            document.getElementById('navMoreBtn').classList.toggle('open');
+        }
+        function switchTab(tab) {
+            if (isImporting && tab !== 'scan') { isImporting = false; document.getElementById('scannerTitle').textContent = 'Сканер штрихкодов'; }
+            document.querySelectorAll('[id^="tab-"]').forEach(el => el.classList.add('hidden'));
+            const target = document.getElementById('tab-' + tab);
+            if (target) target.classList.remove('hidden');
+            document.querySelectorAll('.nav-main .tab').forEach(t => t.classList.remove('active'));
+            const mainTab = document.querySelector(`.nav-main .tab[data-tab="${tab}"]`);
+            if (mainTab) mainTab.classList.add('active');
+            document.querySelectorAll('.nav-dropdown .tab').forEach(t => t.classList.remove('active'));
+            const dropTab = document.querySelector(`.nav-dropdown .tab[data-tab="${tab}"]`);
+            if (dropTab) dropTab.classList.add('active');
+            document.getElementById('navDropdown').classList.remove('show');
+            document.getElementById('navMoreBtn').classList.remove('open');
+            if (tab !== 'scan') stopScanner();
+            updateUI();
+        }
+
+        function updateUI() {
+            document.getElementById('profileCurrency').value = C;
+            document.getElementById('langSelect').value = L;
+            document.getElementById('themeSelect').value = theme;
+            document.getElementById('cardHolderName').value = cardHolder;
+            document.getElementById('monthlyBudget').value = monthlyBudget || '';
+            
+            document.getElementById('cardHolderDisplay').textContent = cardHolder || 'ВЛАДЕЛЕЦ';
+            
+            const bal = getBalance();
+            document.getElementById('totalDisplay').textContent = f(bal);
+            document.getElementById('totalDisplay').style.color = bal >= 0 ? '#28a745' : '#dc3545';
+            
+            const today = new Date().toDateString();
+            document.getElementById('todayDisplay').textContent = f(expenses.filter(e => new Date(e.date).toDateString() === today).reduce((s,e)=>s+e.amount,0));
+
+            const wa = new Date(); wa.setDate(wa.getDate()-7);
+            const we = expenses.filter(e => new Date(e.date) >= wa);
+            const wi = incomes.filter(e => new Date(e.date) >= wa);
+            document.getElementById('weekTotal').textContent = f(we.reduce((s,e)=>s+e.amount,0));
+            document.getElementById('weekIncome').textContent = f(wi.reduce((s,i)=>s+i.amount,0));
+
+            const all = [...expenses.map(e=>({...e,type:'exp'})),...incomes.map(i=>({...i,type:'inc'}))].sort((a,b)=>new Date(b.date)-new Date(a.date));
+            const lst = document.getElementById('expenseList');
+            if (!all.length) lst.innerHTML = '<div class="text-muted text-center" style="padding:20px 0;">Нет операций</div>';
+            else lst.innerHTML = all.slice(0,30).map(o => {
+                const d = new Date(o.date).toLocaleDateString(L==='ru'?'ru-RU':'en-US',{day:'numeric',month:'short'});
+                if (o.type==='inc') return `<div class="row"><span>+ ${o.source||'Доход'}<br><small class="text-muted">${d}</small></span><span class="price green">+${f(o.amount)}</span></div>`;
+                return `<div class="row"><span>${o.category||'Трата'}${o.comment?' ('+o.comment+')':''}<br><small class="text-muted">${d}</small></span><span class="price">-${f(o.amount)}</span></div>`;
+            }).join('');
+            document.getElementById('mainTotal').textContent = 'Баланс: ' + f(bal);
+
+            const grid = document.getElementById('quickButtonsGrid');
+            if (!quickBtns.length) grid.innerHTML = '<div class="text-muted text-center" style="padding:10px;grid-column:1/-1;">Нет быстрых кнопок</div>';
+            else grid.innerHTML = quickBtns.map((b,i) => `
+                <div class="quick-btn" onclick="quickExpense(${i})" oncontextmenu="event.preventDefault();editQuickBtn(${i})">
+                    <div style="font-weight:bold;">${b.name}</div>
+                    <div class="text-muted" style="font-size:12px;">${b.price?f(b.price):'--'}</div>
+                    <button class="delete-quick" onclick="event.stopPropagation();deleteQuickBtn(${i})">×</button>
+                </div>`).join('');
+
+            const il = document.getElementById('incomeList');
+            if (!incomes.length) il.innerHTML = '<div class="text-muted text-center" style="padding:20px 0;">Нет доходов</div>';
+            else il.innerHTML = incomes.slice().reverse().slice(0,20).map(i => `<div class="row"><span>${i.source||'Доход'}<br><small class="text-muted">${new Date(i.date).toLocaleDateString(L==='ru'?'ru-RU':'en-US',{day:'numeric',month:'short'})}</small></span><span class="price green">+${f(i.amount)}</span></div>`).join('');
+            document.getElementById('incomeTotal').textContent = 'Всего доходов: ' + f(incomes.reduce((s,i)=>s+i.amount,0));
+
+            const cl = document.getElementById('cartList');
+            if (!cart.length) cl.innerHTML = '<div class="text-muted text-center" style="padding:15px 0;">Корзина пуста</div>';
+            else cl.innerHTML = cart.map((it,i) => `<div class="row"><span>${it.name}</span><span><span class="price">-${f(it.price)}</span> <span style="cursor:pointer;color:var(--muted);margin-left:8px;font-size:18px;" onclick="removeFromCart(${i})">×</span></span></div>`).join('');
+            document.getElementById('cartTotal').textContent = 'Итого: ' + f(cart.reduce((s,i)=>s+i.price,0));
+            document.getElementById('cartCount').textContent = cart.length + ' товаров';
+
+            const rl = document.getElementById('regularList');
+            if (!regularPayments.length) rl.innerHTML = '<div class="text-muted text-center" style="padding:20px 0;">Нет платежей</div>';
+            else rl.innerHTML = regularPayments.map((p,i) => `<div style="background:var(--card2);padding:14px;border-radius:10px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;"><div><strong>${p.name}</strong><div class="text-muted">${f(p.amount)} · ${p.day}</div></div><div style="display:flex;gap:6px;"><button class="btn-small" style="background:var(--green);color:#fff;" onclick="payRegular(${i})">Оплатить</button><button class="btn-small" onclick="deleteRegular(${i})">×</button></div></div>`).join('');
+
+            const monthStart = new Date(); monthStart.setDate(1); monthStart.setHours(0,0,0,0);
+            const monthExp = expenses.filter(e => new Date(e.date) >= monthStart).reduce((s,e)=>s+e.amount,0);
+            const mbs = document.getElementById('monthlyBudgetStatus');
+            if (monthlyBudget > 0) {
+                const pct = Math.min(100, (monthExp / monthlyBudget) * 100);
+                const cls = pct < 70 ? 'safe' : pct < 100 ? 'warn' : 'danger';
+                mbs.innerHTML = `<div>Потрачено: ${f(monthExp)} из ${f(monthlyBudget)} (${pct.toFixed(0)}%)</div><div class="progress-bar"><div class="progress-fill ${cls}" style="width:${pct}%"></div></div>`;
+            } else { mbs.innerHTML = '<div class="text-muted">Бюджет не установлен</div>'; }
+
+            const cats = ['food','transport','entertainment','home','health','gifts','clothing','other'];
+            const catNames = {food:'Еда',transport:'Транспорт',entertainment:'Развлечения',home:'Дом',health:'Здоровье',gifts:'Подарки',clothing:'Одежда',other:'Другое'};
+            document.getElementById('categoryLimits').innerHTML = cats.map(cat => {
+                const limit = categoryLimits[cat] || 0;
+                const spent = expenses.filter(e => new Date(e.date) >= monthStart && e.category === cat).reduce((s,e)=>s+e.amount,0);
+                const pct = limit > 0 ? Math.min(100, (spent/limit)*100) : 0;
+                const cls = limit > 0 ? (pct >= 100 ? 'danger' : pct >= 70 ? 'warn' : 'safe') : 'safe';
+                return `<div style="margin-bottom:10px;"><div style="display:flex;justify-content:space-between;font-size:13px;"><span>${catNames[cat]}</span><span>${f(spent)}${limit>0?' / '+f(limit):''}</span></div><div style="display:flex;gap:6px;align-items:center;"><div class="progress-bar" style="flex:1;margin:0;"><div class="progress-fill ${cls}" style="width:${pct}%"></div></div><input type="number" value="${limit||''}" placeholder="Лимит" step="0.01" onchange="saveCategoryLimit('${cat}', this.value)" style="width:80px;margin:0;padding:4px 8px;font-size:13px;"></div></div>`;
+            }).join('');
+
+            const gl = document.getElementById('goalsList');
+            if (!goals.length) gl.innerHTML = '<div class="text-muted text-center" style="padding:20px 0;">Нет целей</div>';
+            else gl.innerHTML = goals.map((g,i) => {
+                const pct = Math.min(100, (g.saved / g.amount) * 100);
+                const cls = pct >= 100 ? 'safe' : pct >= 50 ? 'warn' : 'danger';
+                return `<div class="goal-card"><div style="display:flex;justify-content:space-between;align-items:center;"><strong>${g.name}</strong><span>${f(g.saved)} / ${f(g.amount)}</span></div><div class="progress-bar"><div class="progress-fill ${cls}" style="width:${pct}%"></div></div><div class="flex mt-8"><input type="number" id="goalAdd_${i}" placeholder="Сумма" step="0.01" inputmode="decimal" class="flex-1" style="margin:0;padding:8px;"><button class="btn btn-green" onclick="addToGoal(${i})" style="width:auto;padding:8px 16px;">Отложить</button><button class="btn-small" onclick="deleteGoal(${i})">×</button></div></div>`;
+            }).join('');
+
+            const ll = document.getElementById('loansList');
+            if (!loans.length) ll.innerHTML = '<div class="text-muted text-center" style="padding:20px 0;">Нет активных кредитов</div>';
+            else ll.innerHTML = loans.map((l,i) => {
+                const paid = l.paid || 0;
+                const remaining = l.amount - paid;
+                const pct = Math.min(100, (paid / l.amount) * 100);
+                return `<div class="loan-item"><div class="header"><strong>${l.name}</strong><span class="rate">${l.rate}%</span></div><div>Сумма: ${f(l.amount)} | Остаток: ${f(remaining)}</div><div class="progress-bar"><div class="progress-fill green" style="width:${pct}%"></div></div><div class="flex mt-8"><input type="number" id="loanPay_${i}" placeholder="Платеж" step="0.01" class="flex-1" style="margin:0;padding:8px;"><button class="btn btn-green" onclick="payLoan(${i})" style="width:auto;padding:8px 16px;">Оплатить</button><button class="btn-small" onclick="deleteLoan(${i})">×</button></div></div>`;
+            }).join('');
+            const totalLoanDebt = loans.reduce((s,l) => s + (l.amount - (l.paid||0)), 0);
+            document.getElementById('loansTotal').textContent = 'Общий долг: ' + f(totalLoanDebt);
+
+            const dl = document.getElementById('depositsList');
+            if (!deposits.length) dl.innerHTML = '<div class="text-muted text-center" style="padding:20px 0;">Нет активных вкладов</div>';
+            else dl.innerHTML = deposits.map((d,i) => {
+                const earned = d.earned || 0;
+                return `<div class="deposit-item"><div class="header"><strong>${d.name}</strong><span class="rate">${d.rate}%</span></div><div>Сумма: ${f(d.amount)} | Заработано: ${f(earned)}</div><div class="progress-bar"><div class="progress-fill safe" style="width:${Math.min(100, (earned/d.amount)*100)}%"></div></div><div class="flex mt-8"><button class="btn btn-green" onclick="addDepositInterest(${i})" style="width:auto;padding:8px 16px;">Начислить %</button><button class="btn-small" onclick="deleteDeposit(${i})">×</button></div></div>`;
+            }).join('');
+            document.getElementById('depositsTotal').textContent = 'Общая сумма: ' + f(deposits.reduce((s,d) => s + d.amount + (d.earned||0), 0));
+
+            const tl = document.getElementById('transfersList');
+            if (!transfers.length) tl.innerHTML = '<div class="text-muted text-center" style="padding:20px 0;">Нет переводов</div>';
+            else tl.innerHTML = transfers.slice().reverse().slice(0,20).map(t => 
+                `<div class="row"><span>${t.recipient}<br><small class="text-muted">${new Date(t.date).toLocaleDateString()}</small></span><span class="${t.type === 'out' ? 'price' : 'price green'}">${t.type === 'out' ? '-' : '+'}${f(t.amount)}</span></div>`
+            ).join('');
+        }
+
+        // ===== QUICK BUTTONS =====
+        function addQuickBtn() { editingQuickIndex = -1; document.getElementById('quickEditName').value = ''; document.getElementById('quickEditPrice').value = ''; document.getElementById('quickEditDialog').classList.add('show'); }
+        function editQuickBtn(i) { editingQuickIndex = i; document.getElementById('quickEditName').value = quickBtns[i].name || ''; document.getElementById('quickEditPrice').value = quickBtns[i].price || ''; document.getElementById('quickEditCat').value = quickBtns[i].category || 'transport'; document.getElementById('quickEditDialog').classList.add('show'); }
+        function saveQuickEdit() {
+            const name = document.getElementById('quickEditName').value.trim();
+            const price = parseFloat(document.getElementById('quickEditPrice').value) || 0;
+            const category = document.getElementById('quickEditCat').value || 'transport';
+            if (!name) { showToast('Введите название'); return; }
+            if (!price || price <= 0) { showToast('Введите цену'); return; }
+            if (editingQuickIndex >= 0 && editingQuickIndex < quickBtns.length) { quickBtns[editingQuickIndex] = { name, price, category }; } 
+            else { quickBtns.push({ name, price, category }); }
+            saveAll(); document.getElementById('quickEditDialog').classList.remove('show'); editingQuickIndex = -1; updateUI(); showToast('Сохранено!');
+        }
+        function cancelQuickEdit() { document.getElementById('quickEditDialog').classList.remove('show'); editingQuickIndex = -1; }
+        function deleteQuickBtn(i) { showConfirm('Удалить?', 'Удалить быструю кнопку "' + quickBtns[i].name + '"?', function() { quickBtns.splice(i, 1); saveAll(); updateUI(); }); }
+        function quickExpense(i) {
+            const b = quickBtns[i];
+            if (!b || !b.price) { showToast('Настройте цену'); return; }
+            expenses.push({ amount: b.price, category: b.category || 'transport', comment: b.name, date: new Date().toISOString() });
+            saveAll(); updateUI(); showToast(b.name + ': ' + f(b.price));
+        }
+
+        // ===== EXPENSES & INCOME =====
+        function selectCategory(c){ selectedCategory=c; document.querySelectorAll('.cat-item').forEach(el=>el.classList.remove('active')); event?.target?.closest('.cat-item')?.classList.add('active'); }
+        function addManualExpense(){
+            const a=parseFloat(document.getElementById('manualAmount').value);
+            if(!a||a<=0){showToast('Введите сумму');return;}
+            if(!selectedCategory){showToast('Выберите категорию');return;}
+            expenses.push({amount:a,category:selectedCategory,comment:document.getElementById('manualComment').value.trim(),date:new Date().toISOString()});
+            saveAll(); document.getElementById('manualAmount').value=''; document.getElementById('manualComment').value=''; selectedCategory='';
+            document.querySelectorAll('.cat-item').forEach(el=>el.classList.remove('active')); updateUI(); showToast('Списано: ' + f(a));
+        }
+        function addIncome(){
+            const a=parseFloat(document.getElementById('incomeAmount').value);
+            if(!a||a<=0){showToast('Введите сумму');return;}
+            incomes.push({amount:a,source:document.getElementById('incomeSource').value.trim()||'Доход',date:new Date().toISOString()});
+            saveAll(); document.getElementById('incomeAmount').value=''; document.getElementById('incomeSource').value=''; updateUI(); showToast('Зачислено: +' + f(a));
+        }
+
+        // ===== LOANS =====
+        function addLoan() {
+            showInput('Новый кредит', 'Название (напр. Ипотека)', 'Сумма', function(name, amount) {
+                if (!name || !amount) return;
+                const a = parseFloat(amount);
+                if (!a || a <= 0) { showToast('Введите сумму'); return; }
+                showInput('Процентная ставка', 'Ставка % годовых', null, function(rate) {
+                    const r = parseFloat(rate) || 0;
+                    loans.push({ name, amount: a, rate: r, paid: 0, date: new Date().toISOString() });
+                    saveAll(); updateUI(); showToast('Кредит оформлен!');
+                });
+                document.getElementById('inputField1').value = '12';
+            });
+        }
+        function payLoan(i) {
+            const val = parseFloat(document.getElementById('loanPay_'+i)?.value);
+            if (!val || val <= 0) { showToast('Введите сумму платежа'); return; }
+            const bal = getBalance();
+            if (val > bal) { showToast('Недостаточно средств! Баланс: ' + f(bal)); return; }
+            const remaining = loans[i].amount - (loans[i].paid || 0);
+            if (val > remaining) { showToast('Сумма превышает остаток долга'); return; }
+            loans[i].paid = (loans[i].paid || 0) + val;
+            expenses.push({ amount: val, category: 'loan', comment: 'Платеж по кредиту: ' + loans[i].name, date: new Date().toISOString() });
+            saveAll(); updateUI(); showToast('Платеж зачислен: ' + f(val));
+        }
+        function deleteLoan(i) { showConfirm('Закрыть кредит?', 'Закрыть кредит "' + loans[i].name + '"?', function() { loans.splice(i,1); saveAll(); updateUI(); }); }
+
+        // ===== DEPOSITS =====
+        function addDeposit() {
+            showInput('Новый вклад', 'Название (напр. Накопительный)', 'Сумма', function(name, amount) {
+                if (!name || !amount) return;
+                const a = parseFloat(amount);
+                if (!a || a <= 0) { showToast('Введите сумму'); return; }
+                const bal = getBalance();
+                if (a > bal) { showToast('Недостаточно средств! Баланс: ' + f(bal)); return; }
+                showInput('Процентная ставка', 'Ставка % годовых', null, function(rate) {
+                    const r = parseFloat(rate) || 0;
+                    deposits.push({ name, amount: a, rate: r, earned: 0, date: new Date().toISOString() });
+                    expenses.push({ amount: a, category: 'deposit', comment: 'Открытие вклада: ' + name, date: new Date().toISOString() });
+                    saveAll(); updateUI(); showToast('Вклад открыт!');
+                });
+                document.getElementById('inputField1').value = '8';
+            });
+        }
+        function addDepositInterest(i) {
+            const d = deposits[i];
+            const interest = d.amount * (d.rate / 100) / 12;
+            d.earned = (d.earned || 0) + interest;
+            incomes.push({ amount: interest, source: 'Проценты по вкладу: ' + d.name, date: new Date().toISOString() });
+            saveAll(); updateUI(); showToast('Начислено процентов: ' + f(interest));
+        }
+        function deleteDeposit(i) { showConfirm('Закрыть вклад?', 'Закрыть вклад "' + deposits[i].name + '"?', function() { 
+            const d = deposits[i];
+            const total = d.amount + (d.earned || 0);
+            incomes.push({ amount: total, source: 'Закрытие вклада: ' + d.name, date: new Date().toISOString() });
+            deposits.splice(i,1); saveAll(); updateUI(); showToast('Вклад закрыт, средства зачислены');
+        }); }
+
+        // ===== TRANSFER =====
+        function doTransfer() {
+            const recipient = document.getElementById('transferRecipient').value.trim();
+            const amount = parseFloat(document.getElementById('transferAmount').value);
+            const comment = document.getElementById('transferComment').value.trim();
+            if (!recipient) { showToast('Введите получателя'); return; }
+            if (!amount || amount <= 0) { showToast('Введите сумму'); return; }
+            const bal = getBalance();
+            if (amount > bal) { showToast('Недостаточно средств! Баланс: ' + f(bal)); return; }
+            transfers.push({ recipient, amount, comment, type: 'out', date: new Date().toISOString() });
+            expenses.push({ amount, category: 'transfer', comment: 'Перевод: ' + recipient + (comment ? ' ('+comment+')' : ''), date: new Date().toISOString() });
+            saveAll(); updateUI(); showToast('Перевод отправлен: ' + f(amount) + ' → ' + recipient);
+            document.getElementById('transferRecipient').value = '';
+            document.getElementById('transferAmount').value = '';
+            document.getElementById('transferComment').value = '';
+        }
+        function clearTransfer() {
+            document.getElementById('transferRecipient').value = '';
+            document.getElementById('transferAmount').value = '';
+            document.getElementById('transferComment').value = '';
+        }
+
+        // ===== REGULAR =====
+        function toggleRegularForm(){ const f=document.getElementById('regularAddForm'); f.style.display=f.style.display==='none'?'block':'none'; }
+        function cancelRegularPayment(){ document.getElementById('regularAddForm').style.display='none'; document.getElementById('regularName').value=''; document.getElementById('regularAmount').value=''; document.getElementById('regularDay').value=''; }
+        function saveRegularPayment(){ const n=document.getElementById('regularName').value.trim(), a=parseFloat(document.getElementById('regularAmount').value), d=parseInt(document.getElementById('regularDay').value); if(!n||!a||a<=0||!d||d<1||d>31){showToast('Заполните все поля');return;} regularPayments.push({name:n,amount:a,day:d}); saveAll(); cancelRegularPayment(); updateUI(); showToast('Добавлено!'); }
+        function payRegular(i){ const p=regularPayments[i]; showInput('Сумма для "' + p.name + '"', 'Сумма', null, function(val) { const a=parseFloat(val); if(!a||a<=0)return; expenses.push({amount:a,category:'regular',comment:p.name,date:new Date().toISOString()}); saveAll(); updateUI(); showToast('Оплачено: ' + f(a)); }); document.getElementById('inputField1').value = p.amount; }
+        function deleteRegular(i){ showConfirm('Удалить?','Удалить платёж "'+regularPayments[i].name+'"?',function(){ regularPayments.splice(i,1); saveAll(); updateUI(); }); }
+
+        // ===== GOALS =====
+        function addGoal() { editingGoalIndex = -1; document.getElementById('goalEditName').value = ''; document.getElementById('goalEditAmount').value = ''; document.getElementById('goalEditDialog').classList.add('show'); }
+        function saveGoalEdit() {
+            const name = document.getElementById('goalEditName').value.trim();
+            const amount = parseFloat(document.getElementById('goalEditAmount').value) || 0;
+            if (!name) { showToast('Введите название'); return; }
+            if (!amount || amount <= 0) { showToast('Введите сумму'); return; }
+            if (editingGoalIndex >= 0) { goals[editingGoalIndex].name = name; goals[editingGoalIndex].amount = amount; }
+            else { goals.push({ name, amount, saved: 0 }); }
+            saveAll(); document.getElementById('goalEditDialog').classList.remove('show'); editingGoalIndex = -1; updateUI(); showToast('Цель создана!');
+        }
+        function cancelGoalEdit() { document.getElementById('goalEditDialog').classList.remove('show'); editingGoalIndex = -1; }
+        function deleteGoal(i) { showConfirm('Удалить цель?', 'Удалить цель "' + goals[i].name + '"?', function() { goals.splice(i,1); saveAll(); updateUI(); }); }
+        function addToGoal(i) {
+            const val = parseFloat(document.getElementById('goalAdd_'+i)?.value) || 0;
+            if (!val || val <= 0) { showToast('Введите сумму'); return; }
+            const bal = getBalance();
+            if (val > bal) { showToast('Недостаточно средств! Баланс: ' + f(bal)); return; }
+            goals[i].saved += val;
+            expenses.push({ amount: val, category: 'other', comment: 'В цель: ' + goals[i].name, date: new Date().toISOString() });
+            saveAll(); updateUI(); showToast('Отложено в цель: ' + f(val));
+        }
+
+        // ===== LIMITS =====
+        function saveMonthlyBudget() { monthlyBudget = parseFloat(document.getElementById('monthlyBudget').value) || 0; saveAll(); updateUI(); showToast('Бюджет сохранён'); }
+        function saveCategoryLimit(cat, val) { categoryLimits[cat] = parseFloat(val) || 0; saveAll(); updateUI(); }
+
+        // ===== SCANNER =====
+        function startScanner(){ if(scanner){ scanner.stop().then(()=>{ scanner.clear(); document.getElementById('reader').innerHTML=''; scanner=null; initScanner(); }).catch(()=>{ scanner=null; document.getElementById('reader').innerHTML=''; initScanner(); }); return; } initScanner(); }
+        function initScanner(){ document.getElementById('reader').innerHTML=''; document.getElementById('scanStatus').textContent='Запуск...'; scanner=new Html5Qrcode("reader"); scanner.start({facingMode:"environment"},{fps:10,qrbox:{width:250,height:150}},onScanSuccess,()=>{}).then(()=>{ document.getElementById('scanStatus').textContent='Сканирует...'; }).catch(()=>{ scanner=new Html5Qrcode("reader"); scanner.start({facingMode:"user"},{fps:10,qrbox:{width:250,height:150}},onScanSuccess,()=>{}).then(()=>{ document.getElementById('scanStatus').textContent='Фронт. камера'; }).catch(()=>{ showToast('Нет доступа к камере'); scanner=null; }); }); }
+        function onScanSuccess(d){
+            if(navigator.vibrate)navigator.vibrate(100);
+            if (isImporting) {
+                try { const data = JSON.parse(d); if (data.expenses !== undefined) { expenses = data.expenses||[]; incomes = data.incomes||[]; regularPayments = data.regularPayments||[]; productDB = data.productDB||{}; quickBtns = data.quickBtns||quickBtns; monthlyBudget = data.monthlyBudget||0; categoryLimits = data.categoryLimits||{}; goals = data.goals||[]; loans = data.loans||[]; deposits = data.deposits||[]; transfers = data.transfers||[]; cart = []; saveAll(); updateUI(); isImporting = false; stopScanner(); document.getElementById('scannerTitle').textContent = 'Сканер штрихкодов'; showToast('Данные импортированы!'); switchTab('main'); return; } } catch(e) {}
+                isImporting = false; document.getElementById('scannerTitle').textContent = 'Сканер штрихкодов'; showToast('QR-код не распознан'); return;
+            }
+            stopScanner(); scannedBarcode=d; const p=findProduct(d); document.getElementById('scannedProduct').style.display='block'; const c=document.getElementById('scanResult');
+            if(p){ const n=typeof p==='object'?(p.name||''):p, pr=typeof p==='object'?(p.price||0):0; c.innerHTML=`<div style="font-weight:bold;color:var(--green);">Товар найден</div><div style="font-size:22px;margin:6px 0;">${n}</div><div class="text-muted">${d}</div><div class="flex" style="margin-top:10px;"><input type="number" id="scannedPrice" placeholder="Цена" step="0.01" class="flex-1" value="${pr}"><button class="btn btn-green" onclick="addScanned('${n}')" style="width:auto;padding:12px 20px;">В корзину</button></div>`; }
+            else { const s=findSimilar(d); if(s){ const n=typeof s.product==='object'?(s.product.name||''):s.product, pr=typeof s.product==='object'?(s.product.price||0):0; c.innerHTML=`<div class="match-box"><strong>Похожий товар: "${n}"?</strong><div class="text-muted">${d}</div><div class="flex" style="margin-top:10px;"><button class="btn btn-green flex-1" onclick="mergeBarcode('${s.key}','${d}','${n}',${pr})">Да, добавить</button><button class="btn btn-gray flex-1" onclick="showNew()">Нет, новый</button></div></div>`; } else { showNew(); } }
+        }
+        function showNew(){ document.getElementById('scanResult').innerHTML=`<div style="font-weight:bold;color:var(--red);">Неизвестный товар</div><div class="text-muted">${scannedBarcode}</div><div class="flex" style="margin-top:10px;"><input type="number" id="scannedPriceNew" placeholder="Цена" step="0.01" class="flex-1"><button class="btn btn-green" onclick="addUnknownToCart()" style="width:auto;padding:12px 20px;">В корзину</button></div><button class="btn btn-gray mt-8" onclick="addUnknownToDB()">Добавить в базу</button>`; }
+        function findProduct(b){ for(const[k,p]of Object.entries(productDB)){ if((typeof p==='object'&&p.barcodes?p.barcodes:[k]).includes(b))return p; } return null; }
+        function findSimilar(b){ const m=[]; for(const[k,p]of Object.entries(productDB)){ for(const eb of(typeof p==='object'&&p.barcodes?p.barcodes:[k])){ let c=0; for(let i=0;i<Math.min(b.length,eb.length);i++)if(b[i]===eb[i])c++; if(c>=7&&b!==eb){ m.push({product:p,key:k,existingBc:eb,matchCount:c}); break; } } } return m.sort((a,b)=>b.matchCount-a.matchCount)[0]||null; }
+        function mergeBarcode(k,nb,nm,pr){ if(typeof productDB[k]==='object'){ if(!productDB[k].barcodes)productDB[k].barcodes=[k]; if(!productDB[k].barcodes.includes(nb))productDB[k].barcodes.push(nb); } else { productDB[k]={name:nm,price:pr,barcodes:[k,nb]}; } saveAll(); updateUI(); document.getElementById('scanResult').innerHTML=`<div style="font-weight:bold;color:var(--green);">Штрихкод добавлен!</div><div style="font-size:22px;">${nm}</div><div class="flex" style="margin-top:10px;"><input type="number" id="scannedPrice" placeholder="Цена" step="0.01" class="flex-1" value="${pr}"><button class="btn btn-green" onclick="addScanned('${nm}')" style="width:auto;padding:12px 20px;">В корзину</button></div>`; }
+        function stopScanner(){ if (isImporting) { isImporting = false; document.getElementById('scannerTitle').textContent = 'Сканер штрихкодов'; } if(scanner){ scanner.stop().then(()=>{ scanner.clear(); scanner=null; document.getElementById('scanStatus').textContent='Остановлен'; }).catch(()=>{ scanner=null; }); } }
+        function addScanned(nm){ const el=document.getElementById('scannedPrice'); const p=el?parseFloat(el.value):parseFloat(document.getElementById('scannedPriceNew')?.value); if(!p||p<=0){showToast('Введите цену');return;} cart.push({name:nm,barcode:scannedBarcode,price:p}); saveAll(); updateUI(); document.getElementById('scannedProduct').style.display='none'; showToast('Добавлено в корзину'); }
+        function addUnknownToCart(){ const el=document.getElementById('scannedPriceNew')||document.getElementById('scannedPrice'); const p=parseFloat(el?.value); if(!p||p<=0){showToast('Введите цену');return;} cart.push({name:'Неизвестный товар',barcode:scannedBarcode,price:p}); saveAll(); updateUI(); document.getElementById('scannedProduct').style.display='none'; showToast('Добавлено в корзину'); }
+        function addUnknownToDB(){ const el=document.getElementById('scannedPriceNew')||document.getElementById('scannedPrice'); const p=parseFloat(el?.value); if(!p||p<=0){showToast('Сначала введите цену');return;} showInput('Название товара', 'Название', null, function(name) { if(!name)return; productDB[scannedBarcode]={name:name,price:p,barcodes:[scannedBarcode]}; saveAll(); updateUI(); document.getElementById('scanResult').innerHTML=`<div style="font-weight:bold;color:var(--green);">Добавлено!</div><div style="font-size:22px;">${name}</div><div class="flex" style="margin-top:10px;"><input type="number" id="scannedPrice" value="${p}" step="0.01" class="flex-1"><button class="btn btn-green" onclick="addScanned('${name}')" style="width:auto;padding:12px 20px;">В корзину</button></div>`; showToast('Товар добавлен в базу!'); }); }
+        function removeFromCart(i){ cart.splice(i,1); saveAll(); updateUI(); }
+        function saveCart(){ if(!cart.length){showToast('Корзина пуста');return;} const total=cart.reduce((s,i)=>s+i.price,0); cart.forEach(i=>expenses.push({amount:i.price,category:'purchase',comment:i.name,date:new Date().toISOString()})); cart=[]; saveAll(); updateUI(); showToast('Сохранено: ' + f(total)); }
+
+        // ===== QR SYNC =====
+        function exportQR() {
+            closeProfile();
+            const data = JSON.stringify({ expenses, incomes, regularPayments, productDB, quickBtns, monthlyBudget, categoryLimits, goals, loans, deposits, transfers, cardHolder });
+            const modal = document.getElementById('profileModal');
+            const qrDiv = document.getElementById('qrDisplay');
+            qrDiv.innerHTML = '';
+            const encoded = encodeURIComponent(data);
+            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encoded}`;
+            const img = document.createElement('img');
+            img.src = qrUrl;
+            img.style.maxWidth = '100%';
+            img.style.borderRadius = '8px';
+            img.onerror = function() { qrDiv.innerHTML = '<div class="text-muted">Не удалось загрузить QR.</div>'; showToast('Ошибка генерации QR'); };
+            qrDiv.appendChild(img);
+            modal.classList.add('show');
+            document.getElementById('syncStatus').textContent = 'QR-код создан.';
+            setTimeout(() => { qrDiv.innerHTML = ''; document.getElementById('syncStatus').textContent = 'Готов к синхронизации'; }, 120000);
+        }
+        function importQR() { closeProfile(); isImporting = true; switchTab('scan'); document.getElementById('scannerTitle').textContent = 'Сканируйте QR для импорта'; document.getElementById('scanStatus').textContent = 'Ожидание QR...'; startScanner(); }
+
+        function clearAll(){
+            showConfirm('Очистить всё?', 'Удалить ВСЕ данные?', function() {
+                expenses=[]; incomes=[]; goals=[]; loans=[]; deposits=[]; transfers=[]; cart=[]; saveAll(); updateUI();
+                showToast('Все данные очищены');
+            });
+        }
+        function openProfile(){ document.getElementById('profileModal').classList.add('show'); updateUI(); }
+        function closeProfile(){ document.getElementById('profileModal').classList.remove('show'); }
+
+        // PWA
+        let dp; window.addEventListener('beforeinstallprompt',e=>{ e.preventDefault(); dp=e; document.getElementById('installBanner').classList.add('show'); });
+        window.addEventListener('appinstalled',()=>{ document.getElementById('installBanner').classList.remove('show'); dp=null; });
+        function installApp(){ if(!dp){showToast('Установка недоступна');return;} dp.prompt(); dp.userChoice.then(()=>{ dp=null; document.getElementById('installBanner').classList.remove('show'); }); }
+
+        updateUI();
+    </script>
+</body>
+</html>
