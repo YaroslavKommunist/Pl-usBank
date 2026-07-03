@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Pl'usBank</title>
-    
+
     <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIlBsJ3VzQmFuayIsCiAgInNob3J0X25hbWUiOiAiUGx1c0JhbmsiLAogICJzdGFydF91cmwiOiAiLiIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiI2YyZjJmMiIsCiAgInRoZW1lX2NvbG9yIjogIiMzNjg1NUIiLAogICJpY29ucyI6IFt7CiAgICAic3JjIjogImRhdGE6aW1hZ2Uvc3ZnK3htbCwlM0NzdmcgeG1sbnM9J2h0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnJyB2aWV3Qm94PScwIDAgMTAwIDEwMCclM0UlM0NjaXJjbGUgY3g9JzUwJyBjeT0nNTAnIHI9JzUwJyBmaWxsPSclMjMzNjg1NUInLyUzRSUzQ3RleHQgeD0nNTAnIHk9JzY1JyBmb250LXNpemU9JzI4JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyBmaWxsPSd3aGl0ZScgZm9udC1mYW1pbHk9J0FyaWFsJyBmb250LXdlaWdodD0nYm9sZCclM0VQQiUzQy90ZXh0JTNFJTNDL3N2ZyUzRSIsCiAgICAic2l6ZXMiOiAiMTkyeDE5MiIsCiAgICAidHlwZSI6ICJpbWFnZS9zdmcreG1sIgogIH1dfQ==">
-    
+
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Pl'usBank">
     <meta name="theme-color" content="#36855B">
-    
+
     <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -297,6 +297,10 @@
             </div>
             <div class="block">
                 <div class="setting-row">
+                    <span class="label">Моя карта</span>
+                    <span style="font-weight:bold;font-family:monospace;font-size:18px;" id="myCardDisplay">----</span>
+                </div>
+                <div class="setting-row">
                     <span class="label">Имя владельца</span>
                     <input type="text" id="cardHolderName" placeholder="Ваше имя" onchange="saveCardHolder()" style="width:auto;min-width:150px;margin:0;padding:6px 12px;">
                 </div>
@@ -387,7 +391,7 @@
             </div>
             <div style="font-size:28px;opacity:0.8;">💳</div>
         </div>
-        <div class="card-number" id="cardNumberDisplay">•••• •••• •••• 4824</div>
+        <div class="card-number" id="cardNumberDisplay">•••• •••• •••• ----</div>
         <div class="card-footer">
             <span id="cardHolderDisplay">ВЛАДЕЛЕЦ</span>
             <span id="cardExpiry">12/28</span>
@@ -490,13 +494,14 @@
     <div id="tab-transfer" class="hidden">
         <div class="block">
             <div style="font-weight:bold;margin-bottom:10px;font-size:16px;">Перевод средств</div>
-            <input type="text" id="transferRecipient" placeholder="Получатель (номер карты или телефон)">
+            <input type="text" id="transferRecipient" placeholder="Номер карты получателя (4 цифры)">
             <input type="number" id="transferAmount" placeholder="Сумма перевода" step="0.01" inputmode="decimal">
             <input type="text" id="transferComment" placeholder="Назначение платежа">
             <div class="flex">
                 <button class="btn btn-green flex-1" onclick="doTransfer()">Перевести</button>
                 <button class="btn btn-gray flex-1" onclick="clearTransfer()">Очистить</button>
             </div>
+            <div class="text-muted mt-8" style="font-size:11px;">Переводы работают через облако. Получатель получит деньги при следующей синхронизации.</div>
         </div>
         <div class="block">
             <div style="font-weight:bold;margin-bottom:10px;font-size:16px;">История переводов</div>
@@ -587,7 +592,196 @@
 
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <script>
-        // ===== DATA =====
+        // ===== НОВОЕ: КОНФИГУРАЦИЯ ОБЛАКА =====
+        const CLOUD_BIN_ID = '6a47b8e7f5f4af5e295a50cb';
+        const CLOUD_ACCESS_KEY = '$2a$10$oFkhhetGaKPLXPpZDxwvtOI2rM1cNEsLxj77g84jPnxXTJrEsIMGW';
+        const CLOUD_URL = `https://api.jsonbin.io/v3/b/${CLOUD_BIN_ID}`;
+        
+        // ===== НОВОЕ: ГЕНЕРАЦИЯ УНИКАЛЬНОГО НОМЕРА КАРТЫ =====
+        function getMyCardNumber() {
+            let card = localStorage.getItem('myCardNumber');
+            if (!card) {
+                // Генерируем уникальный 4-значный номер
+                card = String(Math.floor(1000 + Math.random() * 9000));
+                localStorage.setItem('myCardNumber', card);
+            }
+            return card;
+        }
+        
+        function getMyCloudUserId() {
+            let uid = localStorage.getItem('myCloudUserId');
+            if (!uid) {
+                uid = getMyCardNumber() + '_' + Date.now().toString(36) + '_' + Math.random().toString(36).substr(2, 5);
+                localStorage.setItem('myCloudUserId', uid);
+            }
+            return uid;
+        }
+
+        // ===== НОВОЕ: ОБЛАЧНЫЕ ФУНКЦИИ =====
+        async function cloudGet() {
+            try {
+                const response = await fetch(CLOUD_URL + '/latest', {
+                    headers: { 'X-Access-Key': CLOUD_ACCESS_KEY }
+                });
+                if (!response.ok) throw new Error('HTTP ' + response.status);
+                const data = await response.json();
+                return data.record;
+            } catch (e) {
+                console.error('Ошибка загрузки из облака:', e);
+                return null;
+            }
+        }
+
+        async function cloudPut(record) {
+            try {
+                const response = await fetch(CLOUD_URL, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Access-Key': CLOUD_ACCESS_KEY,
+                        'X-Bin-Versioning': 'false'
+                    },
+                    body: JSON.stringify(record)
+                });
+                if (!response.ok) throw new Error('HTTP ' + response.status);
+                return true;
+            } catch (e) {
+                console.error('Ошибка сохранения в облако:', e);
+                return false;
+            }
+        }
+
+        async function syncMyBalance() {
+            const myCard = getMyCardNumber();
+            const record = await cloudGet();
+            if (record && record.users && record.users[myCard]) {
+                // Загружаем баланс из облака
+                const cloudBalance = record.users[myCard].balance || 0;
+                const localBalance = getBalance();
+                // Обновляем локальный баланс, если облачный новее
+                if (Math.abs(cloudBalance - localBalance) > 0.001) {
+                    // Корректируем через income/expense
+                    const diff = cloudBalance - localBalance;
+                    if (diff > 0) {
+                        incomes.push({ amount: diff, source: 'Синхронизация из облака', date: new Date().toISOString() });
+                    } else if (diff < 0) {
+                        expenses.push({ amount: Math.abs(diff), category: 'sync', comment: 'Корректировка баланса', date: new Date().toISOString() });
+                    }
+                    saveAll();
+                }
+                return true;
+            }
+            return false;
+        }
+
+        async function registerInCloud() {
+            const myCard = getMyCardNumber();
+            const record = await cloudGet();
+            const cloudData = record || { users: {}, transfers: [] };
+            
+            if (!cloudData.users) cloudData.users = {};
+            if (!cloudData.transfers) cloudData.transfers = [];
+            
+            // Регистрируем пользователя, если его ещё нет
+            if (!cloudData.users[myCard]) {
+                cloudData.users[myCard] = {
+                    cardNumber: myCard,
+                    balance: getBalance(),
+                    name: cardHolder,
+                    registeredAt: new Date().toISOString()
+                };
+            } else {
+                // Обновляем баланс в облаке
+                cloudData.users[myCard].balance = getBalance();
+                cloudData.users[myCard].name = cardHolder;
+            }
+            
+            await cloudPut(cloudData);
+            return cloudData;
+        }
+
+        // ===== НОВОЕ: РАБОТАЮЩИЙ ПЕРЕВОД =====
+        async function doTransfer() {
+            const recipient = document.getElementById('transferRecipient').value.trim();
+            const amount = parseFloat(document.getElementById('transferAmount').value);
+            const comment = document.getElementById('transferComment').value.trim();
+            
+            // Валидация
+            if (!recipient) { showToast('Введите номер карты получателя'); return; }
+            if (recipient.length !== 4 || !/^\d{4}$/.test(recipient)) { showToast('Номер карты — 4 цифры'); return; }
+            if (!amount || amount <= 0) { showToast('Введите сумму перевода'); return; }
+            
+            const myCard = getMyCardNumber();
+            if (recipient === myCard) { showToast('Нельзя перевести самому себе'); return; }
+            
+            const bal = getBalance();
+            if (amount > bal) { showToast('Недостаточно средств! Баланс: ' + f(bal)); return; }
+            
+            // Загружаем облачные данные
+            showToast('Проверяю получателя...');
+            const record = await cloudGet();
+            
+            if (!record || !record.users) {
+                showToast('Ошибка связи с облаком. Попробуйте позже.');
+                return;
+            }
+            
+            if (!record.users[recipient]) {
+                showToast('Получатель с картой ' + recipient + ' не найден в системе');
+                return;
+            }
+            
+            // Всё ок — выполняем перевод
+            if (!record.transfers) record.transfers = [];
+            
+            // Обновляем балансы в облаке
+            record.users[myCard].balance = (record.users[myCard].balance || 0) - amount;
+            record.users[recipient].balance = (record.users[recipient].balance || 0) + amount;
+            
+            // Записываем перевод
+            record.transfers.push({
+                from: myCard,
+                to: recipient,
+                amount: amount,
+                comment: comment || '',
+                date: new Date().toISOString()
+            });
+            
+            // Сохраняем в облако
+            const saved = await cloudPut(record);
+            if (!saved) {
+                showToast('Ошибка при сохранении перевода в облако');
+                return;
+            }
+            
+            // Списываем локально
+            expenses.push({ 
+                amount: amount, 
+                category: 'transfer', 
+                comment: 'Перевод на карту ' + recipient + (comment ? ' (' + comment + ')' : ''), 
+                date: new Date().toISOString() 
+            });
+            
+            // Сохраняем в историю переводов
+            transfers.push({ 
+                recipient: recipient, 
+                amount: amount, 
+                comment: comment, 
+                type: 'out', 
+                date: new Date().toISOString() 
+            });
+            
+            saveAll();
+            updateUI();
+            
+            showToast('✅ Перевод ' + f(amount) + ' на карту ' + recipient + ' выполнен!');
+            
+            document.getElementById('transferRecipient').value = '';
+            document.getElementById('transferAmount').value = '';
+            document.getElementById('transferComment').value = '';
+        }
+
+        // ===== ДАННЫЕ =====
         let L = localStorage.getItem('language') || (navigator.language.startsWith('ru')?'ru':'en');
         let C = localStorage.getItem('currency') || '₽';
         let theme = localStorage.getItem('theme') || 'auto';
@@ -604,7 +798,7 @@
         let loans = JSON.parse(localStorage.getItem('loans')||'[]');
         let deposits = JSON.parse(localStorage.getItem('deposits')||'[]');
         let transfers = JSON.parse(localStorage.getItem('transfers')||'[]');
-        
+
         let selectedCategory = '', scanner = null, scannedBarcode = '', editingQuickIndex = -1, editingGoalIndex = -1;
         let confirmCallback = null, inputCallback = null;
         let isImporting = false;
@@ -632,7 +826,7 @@
             let toast = document.getElementById('toast');
             if (!toast) { toast = document.createElement('div'); toast.id = 'toast'; toast.className = 'toast'; document.body.appendChild(toast); }
             toast.textContent = msg; toast.style.opacity = '1';
-            clearTimeout(toast._t); toast._t = setTimeout(() => { toast.style.opacity = '0'; }, 2500);
+            clearTimeout(toast._t); toast._t = setTimeout(() => { toast.style.opacity = '0'; }, 3000);
         }
 
         function showConfirm(title, message, callback) {
@@ -677,7 +871,7 @@
 
         function changeCurrency(s) { C = s; localStorage.setItem('currency', s); updateUI(); }
         function changeLanguage(l) { L = l; localStorage.setItem('language', l); updateUI(); }
-        
+
         function saveCardHolder() {
             const name = document.getElementById('cardHolderName').value.trim().toUpperCase();
             if (name) { cardHolder = name; saveAll(); updateUI(); }
@@ -710,13 +904,18 @@
             document.getElementById('themeSelect').value = theme;
             document.getElementById('cardHolderName').value = cardHolder;
             document.getElementById('monthlyBudget').value = monthlyBudget || '';
-            
+
             document.getElementById('cardHolderDisplay').textContent = cardHolder || 'ВЛАДЕЛЕЦ';
             
+            // НОВОЕ: показываем номер карты
+            const myCard = getMyCardNumber();
+            document.getElementById('cardNumberDisplay').textContent = '•••• •••• •••• ' + myCard;
+            document.getElementById('myCardDisplay').textContent = myCard;
+
             const bal = getBalance();
             document.getElementById('totalDisplay').textContent = f(bal);
             document.getElementById('totalDisplay').style.color = bal >= 0 ? '#28a745' : '#dc3545';
-            
+
             const today = new Date().toDateString();
             document.getElementById('todayDisplay').textContent = f(expenses.filter(e => new Date(e.date).toDateString() === today).reduce((s,e)=>s+e.amount,0));
 
@@ -910,22 +1109,6 @@
             deposits.splice(i,1); saveAll(); updateUI(); showToast('Вклад закрыт, средства зачислены');
         }); }
 
-        // ===== TRANSFER =====
-        function doTransfer() {
-            const recipient = document.getElementById('transferRecipient').value.trim();
-            const amount = parseFloat(document.getElementById('transferAmount').value);
-            const comment = document.getElementById('transferComment').value.trim();
-            if (!recipient) { showToast('Введите получателя'); return; }
-            if (!amount || amount <= 0) { showToast('Введите сумму'); return; }
-            const bal = getBalance();
-            if (amount > bal) { showToast('Недостаточно средств! Баланс: ' + f(bal)); return; }
-            transfers.push({ recipient, amount, comment, type: 'out', date: new Date().toISOString() });
-            expenses.push({ amount, category: 'transfer', comment: 'Перевод: ' + recipient + (comment ? ' ('+comment+')' : ''), date: new Date().toISOString() });
-            saveAll(); updateUI(); showToast('Перевод отправлен: ' + f(amount) + ' → ' + recipient);
-            document.getElementById('transferRecipient').value = '';
-            document.getElementById('transferAmount').value = '';
-            document.getElementById('transferComment').value = '';
-        }
         function clearTransfer() {
             document.getElementById('transferRecipient').value = '';
             document.getElementById('transferAmount').value = '';
@@ -993,7 +1176,7 @@
         // ===== QR SYNC =====
         function exportQR() {
             closeProfile();
-            const data = JSON.stringify({ expenses, incomes, regularPayments, productDB, quickBtns, monthlyBudget, categoryLimits, goals, loans, deposits, transfers, cardHolder });
+            const data = JSON.stringify({ expenses, incomes, regularPayments, productDB, quickBtns, monthlyBudget, categoryLimits, goals, loans, deposits, transfers, cardHolder, myCardNumber: getMyCardNumber() });
             const modal = document.getElementById('profileModal');
             const qrDiv = document.getElementById('qrDisplay');
             qrDiv.innerHTML = '';
@@ -1024,6 +1207,40 @@
         let dp; window.addEventListener('beforeinstallprompt',e=>{ e.preventDefault(); dp=e; document.getElementById('installBanner').classList.add('show'); });
         window.addEventListener('appinstalled',()=>{ document.getElementById('installBanner').classList.remove('show'); dp=null; });
         function installApp(){ if(!dp){showToast('Установка недоступна');return;} dp.prompt(); dp.userChoice.then(()=>{ dp=null; document.getElementById('installBanner').classList.remove('show'); }); }
+
+        // ===== НОВОЕ: ИНИЦИАЛИЗАЦИЯ ПРИ ЗАГРУЗКЕ =====
+        async function initApp() {
+            const myCard = getMyCardNumber();
+            console.log('🟢 Моя карта:', myCard);
+            
+            // Пробуем синхронизироваться с облаком
+            const record = await cloudGet();
+            if (record && record.users && record.users[myCard]) {
+                // Пользователь уже есть в облаке — синхронизируем баланс
+                const cloudBalance = record.users[myCard].balance || 0;
+                const localBalance = getBalance();
+                if (cloudBalance > localBalance) {
+                    // В облаке баланс больше — возможно, получили перевод
+                    const diff = cloudBalance - localBalance;
+                    incomes.push({ amount: diff, source: 'Получен перевод (синхронизация)', date: new Date().toISOString() });
+                    saveAll();
+                    showToast('💰 Баланс обновлён из облака!');
+                }
+            }
+            
+            // Регистрируемся/обновляемся в облаке
+            await registerInCloud();
+            
+            updateUI();
+        }
+
+        // Запускаем приложение
+        initApp().then(() => {
+            console.log('🟢 Pl\'usBank с облачными переводами готов!');
+        }).catch(e => {
+            console.error('Ошибка инициализации:', e);
+            updateUI();
+        });
 
         updateUI();
     </script>
